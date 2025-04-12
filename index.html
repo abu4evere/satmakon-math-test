@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SATMAKON Math Level Test</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --primary: #3B2289;       /* Your brand dark purple */
+      --primary-dark: #2A1966;  /* Darker shade of your primary */
+      --primary-light: #B7A8E3; /* Your brand light purple */
+      --secondary: #10B981;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --dark: #1F2937;
+      --light: #F9FAFB;
+      --gray: #6B7280;
+      --light-gray: #E5E7EB;
+      --white: #FFFFFF;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --radius-sm: 0.25rem;
+      --radius: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+      color: var(--dark);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      background: var(--white);
+      width: 100%;
+      max-width: 800px;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+
+    .container:hover {
+      transform: translateY(-5px);
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--white);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      transform: rotate(30deg);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .content {
+      padding: 2rem 1.5rem;
+    }
+
+    p {
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+
+    .header p {
+      color: var(--primary-light);
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .timer {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--primary);
+      color: var(--white);
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow);
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    .timer.low-time {
+      background: var(--danger);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .progress-container {
+      margin-bottom: 2rem;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--gray);
+    }
+
+    .progress-bar {
+      height: 0.75rem;
+      background: var(--light-gray);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+      width: 0;
+      border-radius: var(--radius);
+      transition: width 0.3s ease;
+    }
+
+    .question {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .question-number {
+      position: absolute;
+      top: -0.75rem;
+      left: 1.5rem;
+      background: var(--primary);
+      color: var(--white);
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .question.answered {
+      border-left: 4px solid var(--primary-light);
+    }
+
+    .question h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--dark);
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid var(--light-gray);
+    }
+
+    .option:hover {
+      background: var(--light);
+      border-color: var(--primary-light);
+    }
+
+    .option.selected {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .option input {
+      opacity: 0;
+      position: absolute;
+    }
+
+    .option-radio {
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 2px solid var(--gray);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .option.selected .option-radio {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .option-radio::after {
+      content: "";
+      width: 0.625rem;
+      height: 0.625rem;
+      background: var(--white);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .option.selected .option-radio::after {
+      opacity: 1;
+    }
+
+    .option-text {
+      flex: 1;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      background: var(--primary);
+      color: var(--white);
+      box-shadow: var(--shadow-sm);
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-block {
+      display: flex;
+      width: 100%;
+    }
+
+    .btn-lg {
+      padding: 1rem 2rem;
+      font-size: 1.125rem;
+    }
+
+    .result-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      text-align: center;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+    }
+
+    .score {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 1rem 0;
+    }
+
+    .group-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: var(--white);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      margin: 1rem 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .welcome-icon {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .test-info {
+      background: var(--light);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .test-info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .test-info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .test-info-icon {
+      color: var(--primary);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 640px) {
+      .header {
+        padding: 1.5rem 1rem;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      .content {
+        padding: 1.5rem 1rem;
+      }
+      
+      .question {
+        padding: 1.25rem 1rem;
+      }
+      
+      .btn-lg {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111827;
+      }
+      
+      .container {
+        background: #1F2937;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+      }
+      
+      .header {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      }
+      
+      h1, h2, h3 {
+        color: #F9FAFB;
+      }
+      
+      p {
+        color: #D1D5DB;
+      }
+      
+      .question {
+        background: #374151;
+        border-color: #4B5563;
+      }
+      
+      .option {
+        background: #374151;
+        border-color: #4B5563;
+      }
+      
+      .option:hover {
+        background: #4B5563;
+      }
+      
+      .test-info {
+        background: #374151;
+      }
+      
+      .option-radio {
+        border-color: #6B7280;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="timer hidden" id="timer">
+    <i class="fas fa-clock"></i>
+    <span id="timer-text">45:00</span>
+  </div>
+  
+  <main class="container">
+    <div class="header">
+      <h1>SATMAKON Math Level Test</h1>
+      <p>Assess your math skills and find your perfect learning path</p>
+    </div>
+    
+    <section id="start-screen" class="content">
+      <div class="welcome-icon">
+        <i class="fas fa-calculator"></i>
+      </div>
+      <h2>Welcome to the Math Level Test!</h2>
+      <p>This comprehensive test will evaluate your current math knowledge and help us place you in the right learning group.</p>
+      
+      <div class="test-info">
+        <div class="test-info-item">
+          <i class="fas fa-question-circle test-info-icon"></i>
+          <span>30 carefully crafted questions</span>
+        </div>
+        <div class="test-info-item">
+          <i class="fas fa-stopwatch test-info-icon"></i>
+          <span>45 minute time limit</span>
+        </div>
+        <div class="test-info-item">
+          <i class="fas fa-chart-line test-info-icon"></i>
+          <span>Immediate results with personalized feedback</span>
+        </div>
+      </div>
+      
+      <button class="btn btn-lg btn-block" onclick="startTest()">
+        <i class="fas fa-play"></i> Start Test
+      </button>
+    </section>
+
+    <section id="test-screen" class="content hidden">
+      <div class="progress-container">
+        <div class="progress-header">
+          <span>Question <span id="current-question">1</span> of <span id="total-questions">30</span></span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+      
+      <form id="quiz-form" aria-label="SAT Math Level Test">
+        <div id="questions-container"></div>
+        <button type="submit" class="btn btn-lg btn-block">
+          <i class="fas fa-paper-plane"></i> Submit Test
+        </button>
+      </form>
+    </section>
+
+    <section id="result-screen" class="content hidden">
+      <div class="result-card fade-in">
+        <i class="fas fa-trophy" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
+        <h2>Test Completed!</h2>
+        <div class="score" id="score-display">0</div>
+        <p>out of 30 questions</p>
+        <div class="group-badge" id="group-badge">Pre-Foundation Math</div>
+        <p id="result-message">Based on your results, we recommend starting with our Pre-Foundation Math course.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        question: "If 3(x − 5) = 15, what does <sup>x−5</sup>⁄<sub>x+5</sub> equal?",
+        options: ["<sup>2</sup>⁄<sub>3</sub>", "<sup>1</sup>⁄<sub>7</sub>", "<sup>4</sup>⁄<sub>3</sub>", "<sup>1</sup>⁄<sub>3</sub>"],
+        correct: "<sup>1</sup>⁄<sub>3</sub>"
+      },
+      {
+        question: "(x<sup>2</sup> − 3) − (−3x<sup>2</sup> + 5)<br>Which of the following expressions is equivalent to the one above?",
+        options: ["4x<sup>2</sup> − 8", "4x<sup>2</sup> − 2", "−2x<sup>2</sup> − 8", "−2x<sup>2</sup> − 2"],
+        correct: "4x<sup>2</sup> − 8"
+      },
+      {
+        question: "(x + 3)(4x<sup>2</sup> − 5x + 1)<br>Which of the following is an equivalent form of this expression?",
+        options: ["4x<sup>3</sup> + 7x<sup>2</sup> + 14x + 3", "4x<sup>3</sup> + 7x<sup>2</sup> − 14x + 3", "4x<sup>3</sup> − 7x<sup>2</sup> + 14x + 3", "4x<sup>3</sup> − 7x<sup>2</sup> − 14x + 3"],
+        correct: "4x<sup>3</sup> + 7x<sup>2</sup> − 14x + 3"
+      },
+      {
+        question: "If 2y + 5 = −3y + 12x, what is the value of y in terms of x?",
+        options: ["(12x + 5) / (2x + 3)", "(12x − 5) / (2x + 3)", "(12x + 5) / (2x − 3)", "(12x − 5) / (2x − 3)"],
+        correct: "(12x − 5) / 5"
+      },
+      {
+        question: "9x − 13 ≤ 2x + 8<br>Which of the following is the solution set for this inequality?",
+        options: ["x ≤ 3", "x ≥ 3", "x ≤ −3", "x ≥ −3"],
+        correct: "x ≤ 3"
+      },
+      {
+        question: "Which of the following expressions is an equivalent form of the expression<br>(2x + 2)<sup>2</sup> + (2x + 2)?",
+        options: ["2x<sup>2</sup> + 10x + 6", "4x<sup>2</sup> + 10x + 6", "(2x + 2)(2x + 3)", "(4x + 8)(x + 1)"],
+        correct: "(2x + 2)(2x + 3)"
+      },
+      {
+        question: "Which of the following is equivalent to the equation below where x ≠ 2?<br><img src='7.png' alt='Equation: (3x + 4)/(x - 2)' style='width: 150px; height: auto;'>",
+        options: ["6 / (x − 2)", "22 / (3x − 2)", "16 / (3x − 6)", "28 / (3x − 6)"],
+        correct: "16 / (3x − 6)"
+      },
+      {
+        question: "If the ratio of y : 2.4 is equivalent to 2.7 : 3.6, what is the value of y?",
+        options: ["3/2", "4/3", "7/3", "9/5"],
+        correct: "9/5"
+      },
+      {
+        question: "y = x<sup>2</sup> + 1<br>y = x - 1<br><img src='9.png' alt='Graph of y = x^2 + 1 and y = x - 1' style='width: 250px; height: auto;'><br>A system of two equations and their graphs in the xy-plane are shown below. How many solutions does the system have?",
+        options: ["Zero", "One", "Two", "Three"],
+        correct: "Two"
+      },
+      {
+        question: "Chris was skateboarding at 8 feet per second when he came to the top of a hill. After riding down the hill for 3.5 seconds, he was moving at 43 feet per second. Assuming the acceleration was constant, what was his acceleration in feet per second squared?",
+        options: ["8", "10", "12", "14"],
+        correct: "10"
+      },
+      {
+        question: "The number of electronic bikes sold by a particular retailer in a city can be modeled with the function <em>f(t) = 760(1.65)<sup>t</sup></em>, where t is the number of years since 2019. Which of the following is true?",
+        options: [
+          "The number of electronic bikes sold by this particular retailer is increasing by 760 per year.",
+          "The number of bikes sold by this particular retailer in 2020 is 494 more than the number sold in 2019.",
+          "The number of electronic bikes sold by this particular retailer is increasing by 165% per year.",
+          "The number of bikes sold by this particular retailer is decreasing by 65% each year."
+        ],
+        correct: "The number of electronic bikes sold by this particular retailer is increasing by 65% per year."
+      },
+      {
+        question: "What is the sum of the solutions of the equation<br> x<sup>2</sup> - 4x - 21 = 0?",
+        options: ["-10", "-4", "3", "4"],
+        correct: "4"
+      },
+      {
+        question: "What is the remainder when x<sup>2</sup> + 2x + 1 is divided by x + 4?",
+        options: ["4", "2", "1", "9"],
+        correct: "9"
+      },
+      {
+        question: "<img src='14.png' alt='Table showing baseball team game results by favorite or underdog status' style='width: 250px; height: auto;'><br>The table above shows the results of a baseball team, categorized by whether the team was considered the favourite (expected to win) in the game or the underdog (expected to lose). What fraction of the games in which the team was considered the underdog did the team win?",
+        options: ["2/5", "2/7", "2/9", "2/15"],
+        correct: "2/9"
+      },
+      {
+        question: "<br><img src='17.png' alt='Geometric figure showing angle AED' style='width: 260px; height: auto;'><br>Note: Figure not drawn to scale.<br>In the figure above, what is the measure of <AED in degrees?",
+        options: ["125", "135", "115", "145"],
+        correct: "135"
+      },
+      {
+        question: "What is the value of f(-3) given f(x)=3x<sup>2</sup>+3x+10",
+        options: ["-46", "-26", "28", "36"],
+        correct: "28"
+      },
+      {
+        question: "(x-1)<sup>2</sup>=3x-5<br>What is one possible solution to the equation above?",
+        options: ["2", "3", "7", "1"],
+        correct: ["2", "3"]
+      },
+      {
+        question: "In the xy-plane, which of the following points lies in the interior of a circle with the equation (x+h)<sup>2</sup>+(y+k)<sup>2</sup>=289",
+        options: ["(-h-15,-k+8)", "(-h+8,-k+7)", "(-h-8,-k-15)", "(-h+17,-k-1)"],
+        correct: "(-h-8,-k-15)"
+      },
+      {
+        question: "Two numbers, a and b, are each greater than zero, and the square root of a is equal to the cube root of b. For what value of x is a<sup>2x-1</sup> equal to b?",
+        options: ["5/6", "7/6", "5/4", "4/5"],
+        correct: "5/4"
+      },
+      {
+        question: "In the xy-plane, the line y=2x+b intersects the parabola y=x<sup>2</sup>+bx+5 at the point (3,k). If b is a constant, what is the value of k?",
+        options: ["0", "1", "2", "3"],
+        correct: "2"
+      },
+      {
+        question: "The side lengths of a triangle are given in the figure below. What does sin C equal?<br><img src='21.png' alt='Geometric figure showing angle AED' style='width: 180px; height: auto;'>",
+        options: ["2", "2/3", "1/2", "3/4"],
+        correct: "1/2"
+      },
+      {
+        question: "Which of the following is equivalent to<br> 5x<sup>3</sup>-6x<sup>2</sup>-9x+10x<sup>2</sup>+8x-4?",
+        options: ["5x<sup>3</sup>+4x<sup>2</sup>+x-4", "5x<sup>3</sup>+4x<sup>2</sup>-x-4", "5x<sup>3</sup>-4x<sup>2</sup>+x-4", "5x<sup>3</sup>-4x<sup>2</sup>-x-4"],
+        correct: "5x<sup>3</sup>+4x<sup>2</sup>-x-4"
+      },
+      {
+        question: "2x-5y=k<br>-8x+20y=-24<br>What value of k in this system of equations produces infinitely many solutions?",
+        options: ["0", "1", "6", "4"],
+        correct: "6"
+      },
+      {
+        question: "<img src='24.png' alt='Graph of a system of inequalities' style='width: 220px; height: auto;'><br>This graph represents which of the following systems of linear inequalities?",
+        options: [
+          "(A) y ≤ 2x - 3<br>y ≤ -x + 2",
+          "(B) y ≤ 2x - 3<br>y ≥ -x + 2",
+          "(C) y ≥ 2x - 3<br>y ≤ -x + 2",
+          "(D) y ≥ 2x - 3<br>y ≥ -x + 2"
+        ],
+        correct: "C"
+      },
+      {
+        question: "Find the value of y<br>22 - | y + 14 | = 20",
+        options: ["-12", "-14", "2", "-16"],
+        correct: ["-12", "-16"]
+      },
+      {
+        question: "<img src='26.png' alt='Geometric figure showing angle AED' style='width: 300px; height: auto;'><br>In the geometric figure shown here, JK = KL, LM = MN, and triangle KLM is a right triangle. If x=115 then angle LMN measures which of the following?",
+        options: ["130", "135", "140", "145"],
+        correct: "130"
+      },
+      {
+        question: "Which of the following expressions is equivalent to<br>x<sup>2</sup>-5",
+        options: ["(x+√5)<sup>2</sup>", "(x-√5)<sup>2</sup>", "(x-√5)(x+√5)", "(x+5)(x-1)"],
+        correct: "(x-√5)(x+√5)"
+      },
+      {
+        question: "In the linear function f, f(0)=15, and f(1)=20. Which equation defines f?",
+        options: ["f(x)=20x+15", "f(x)=5x", "f(x)=5x+15", "f(x)=5x+20"],
+        correct: "f(x)=5x+15"
+      },
+      {
+        question: "4a+3b=22<br>3a+2b=16<br>In the system of equation above, what is the value a+b?",
+        options: ["10", "8", "7", "6"],
+        correct: "6"
+      },
+      {
+        question: "Julie spent 2 hours and 20 minutes per day studying for her SAT over the first three week of April. During the last week in April, she studied an extra 30% each day. How much time did Julie spend studying during the last week?",
+        options: ["3 hours and 2 minutes", "2 hours and 2 minutes", "20 hours and 2 minutes", "21 hours and 14 minutes"],
+        correct: "21 hours and 14 minutes"
+      }
+    ];
+
+    const totalTime = 45 * 60;
+    let timeLeft = totalTime;
+    let timerInterval;
+    let userAnswers = Array(questions.length).fill(null);
+
+    function startTest() {
+      const startScreen = document.getElementById("start-screen");
+      const testScreen = document.getElementById("test-screen");
+      const timer = document.getElementById("timer");
+
+      startScreen.classList.add("hidden");
+      testScreen.classList.remove("hidden");
+      timer.classList.remove("hidden");
+
+      loadQuestions();
+      startTimer();
+    }
+
+    function loadQuestions() {
+      const container = document.getElementById("questions-container");
+      container.innerHTML = '';
+      
+      questions.forEach((q, index) => {
+        const div = document.createElement("div");
+        div.className = `question ${userAnswers[index] !== null ? 'answered' : ''}`;
+        div.innerHTML = `
+          <div class="question-number">${index + 1}</div>
+          <h3>${q.question}</h3>
+          <div class="options">
+            ${q.options.map((option, optIndex) => `
+              <label class="option ${userAnswers[index] === option ? 'selected' : ''}">
+                <input type="radio" name="q${index}" value="${option}" 
+                  ${userAnswers[index] === option ? 'checked' : ''}>
+                <span class="option-radio"></span>
+                <span class="option-text">${option}</span>
+              </label>
+            `).join('')}
+          </div>
+        `;
+        
+        container.appendChild(div);
+      });
+
+      document.getElementById("total-questions").textContent = questions.length;
+      
+      // Add event listeners for radio buttons
+      document.querySelectorAll('.option').forEach(option => {
+        option.addEventListener('click', function() {
+          const input = this.querySelector('input');
+          const questionIndex = parseInt(input.name.substring(1));
+          
+          // Deselect all options in this question
+          document.querySelectorAll(`input[name="q${questionIndex}"]`).forEach(inp => {
+            inp.closest('.option').classList.remove('selected');
+          });
+          
+          // Select clicked option
+          this.classList.add('selected');
+          input.checked = true;
+          
+          // Update userAnswers
+          userAnswers[questionIndex] = input.value;
+          
+          // Mark question as answered
+          this.closest('.question').classList.add('answered');
+          
+          updateProgress();
+        });
+      });
+    }
+
+    function startTimer() {
+      const timerDisplay = document.getElementById("timer-text");
+      
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        if (timeLeft <= 300) { // 5 minutes left
+          document.getElementById("timer").classList.add("low-time");
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          submitQuiz();
+        }
+        timeLeft--;
+      }, 1000);
+    }
+
+    function updateProgress() {
+      const answeredCount = userAnswers.filter(answer => answer !== null).length;
+      const totalQuestions = questions.length;
+      const progressPercentage = Math.round((answeredCount / totalQuestions) * 100);
+      
+      document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
+      document.getElementById("current-question").textContent = answeredCount + 1;
+      document.getElementById("progress-percent").textContent = `${progressPercentage}%`;
+    }
+
+    function determineGroup(score) {
+      if (score >= 0 && score <= 7) {
+        return {
+          name: "Pre-Foundation Math",
+          message: "We recommend starting with our Pre-Foundation Math course to build a strong base for your SAT preparation."
+        };
+      } else if (score >= 8 && score <= 14) {
+        return {
+          name: "Foundation Math",
+          message: "You have a good foundation! Our Foundation Math course will help you strengthen your core concepts before moving to SAT-specific content."
+        };
+      } else if (score >= 15 && score <= 25) {
+        return {
+          name: "Pre-SAT Math",
+          message: "Great job! You're ready for our Pre-SAT Math course which focuses on bridging the gap between your current level and SAT requirements."
+        };
+      } else if (score >= 26) {
+        return {
+          name: "SAT Math",
+          message: "Excellent! You're ready to dive straight into our SAT Math course focused on advanced strategies and test-taking techniques."
+        };
+      }
+      return {
+        name: "Unknown Group",
+        message: "Please contact our advisors for a personalized learning plan."
+      };
+    }
+
+    function animateValue(id, start, end, duration) {
+      const obj = document.getElementById(id);
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    function submitQuiz() {
+      clearInterval(timerInterval);
+      document.getElementById("timer").classList.add("hidden");
+      document.getElementById("test-screen").classList.add("hidden");
+      
+      let score = 0;
+      questions.forEach((q, index) => {
+        if (userAnswers[index] !== null) {
+          if (Array.isArray(q.correct)) {
+            if (q.correct.includes(userAnswers[index])) {
+              score++;
+            }
+          } else {
+            if (userAnswers[index] === q.correct) {
+              score++;
+            }
+          }
+        }
+      });
+
+      const totalQuestions = questions.length;
+      const group = determineGroup(score);
+      
+      document.getElementById("score-display").textContent = score;
+      document.getElementById("group-badge").textContent = group.name;
+      document.getElementById("result-message").textContent = group.message;
+      
+      // Animate the score display
+      animateValue("score-display", 0, score, 1000);
+      
+      document.getElementById("result-screen").classList.remove("hidden");
+      
+      // Confetti celebration
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
+    // Initialize the form submission handler
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById("quiz-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        submitQuiz();
+      });
+    });
+  </script>
+</body>
+</html>
