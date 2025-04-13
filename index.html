@@ -75,8 +75,23 @@
       text-align: center;
       position: relative;
       overflow: hidden;
+display: flex;
+  align-items: center;
     }
+.logo-container {
+  flex-shrink: 0; /* Prevents logo from shrinking */
+}
 
+.logo {
+  height: 50px; /* Ideal size for your layout */
+  width: auto;
+  transition: transform 0.3s ease;
+}
+
+.header-text {
+  flex: 1;
+  padding-left: 1.5rem; /* Matches your header padding */
+}
     .header::before {
       content: "";
       position: absolute;
@@ -561,8 +576,17 @@
 
     @media (max-width: 640px) {
       .header {
+        flex-direction: column;
+    text-align: center;
         padding: 1.5rem 1rem;
       }
+       .logo {
+    height: 40px;
+    margin-bottom: 1rem;
+  }
+  .header-text {
+    padding-left: 0;
+  }
       
       h1 {
         font-size: 1.5rem;
@@ -604,6 +628,10 @@
   
   <main class="container">
     <div class="header">
+      <div class="logo-container" style="margin-right: 1.5rem;">
+        <img src="favicon.png" alt="SATMAKON Logo" class="logo" style="height: 50px;">
+      </div>
+<div class="header-text">
       <h1>SATMAKON Math Level Test</h1>
       <p>Assess your math skills and find your perfect learning path</p>
     </div>
