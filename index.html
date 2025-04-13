@@ -7,8 +7,37 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"></script>
+<script type="module">
+  // Import the functions you need from the SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyABhFpHFKnM3BtqbGNbe6lH6tESeYt0tpo",
+    authDomain: "satmakonmath.firebaseapp.com",
+    databaseURL: "https://satmakonmath-default-rtdb.firebaseio.com",
+    projectId: "satmakonmath",
+    storageBucket: "satmakonmath.firebasestorage.app",
+    messagingSenderId: "251847690674",
+    appId: "1:251847690674:web:8ff67992e002081d11bcab",
+    measurementId: "G-WDSB73N8FX"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+  
+  // Make database available globally (for your existing functions)
+  window.database = database;
+  window.firebaseRef = ref;
+  window.firebasePush = push;
+  window.firebaseSet = set;
+  window.firebaseOnValue = onValue;
+  
+  console.log("Firebase initialized successfully!");
+</script>
+  
   <style>
     :root {
       --primary: #3B2289;
@@ -518,29 +547,28 @@
     }
 
     .admin-controls {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: var(--light);
-      border-radius: var(--radius);
-    }
-    
-    .admin-login-form {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    .admin-login-form input {
-      flex: 1;
-      padding: 0.75rem;
-      border: 1px solid var(--light-gray);
-      border-radius: var(--radius-sm);
-    }
-    
-    .admin-only {
-      display: none;
-    }
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--light);
+  border-radius: var(--radius);
+}
 
+.admin-login-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.admin-login-form input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--light-gray);
+  border-radius: var(--radius-sm);
+}
+
+.admin-only {
+  display: none !important;
+}
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -620,7 +648,27 @@
           <span>Immediate results with personalized feedback</span>
         </div>
       </div>
-      
+      <!-- In the start-screen section, add this before the start button -->
+<div class="admin-controls" id="admin-controls">
+  <div id="admin-login-section">
+    <h3>Admin Access</h3>
+    <div class="admin-login-form">
+      <input type="password" id="admin-password" placeholder="Enter admin password" class="form-control">
+      <button class="btn" onclick="checkAdminPassword()">
+        <i class="fas fa-lock"></i> Login
+      </button>
+    </div>
+  </div>
+  <div id="admin-actions" class="hidden">
+    <button class="btn btn-block" onclick="downloadAllResults()">
+      <i class="fas fa-download"></i> Download All Results
+    </button>
+    <button class="btn btn-block" onclick="viewSavedResults()" style="margin-top: 0.5rem;">
+      <i class="fas fa-list"></i> View All Results
+    </button>
+  </div>
+</div>
+
       <button class="btn btn-lg btn-block" id="start-test-btn">
         <i class="fas fa-play"></i> Start Test
       </button>
@@ -1223,28 +1271,33 @@
     }
 
     function saveResults(score, groupName) {
-      console.log('Saving results');
-      const resultData = {
-        studentInfo,
-        score,
-        totalQuestions: questions.length,
-        group: groupName,
-        testDate: new Date().toISOString(),
-        answers: userAnswers
-      };
+  const resultData = {
+    studentInfo,
+    score,
+    totalQuestions: questions.length,
+    group: groupName,
+    testDate: new Date().toISOString(),
+    answers: userAnswers
+  };
 
-      try {
-        const newResultRef = database.ref('results').push();
-        newResultRef.set(resultData)
-          .then(() => console.log('Result saved to Firebase'))
-          .catch(error => {
-            console.error('Error saving result:', error);
-            alert('Failed to save result to cloud storage.');
-          });
-      } catch (error) {
-        console.error('Firebase not initialized:', error);
-      }
+  if (database) {
+    try {
+      const resultsRef = ref(database, 'results');
+      const newResultRef = push(resultsRef);
+      set(newResultRef, resultData)
+        .then(() => console.log('Result saved to Firebase'))
+        .catch(error => {
+          console.error('Error saving result:', error);
+          saveToLocalStorage(resultData);
+        });
+    } catch (error) {
+      console.error('Firebase error:', error);
+      saveToLocalStorage(resultData);
     }
+  } else {
+    saveToLocalStorage(resultData);
+  }
+}
 
     function checkAdminPassword() {
       console.log('Checking admin password');
@@ -1298,48 +1351,85 @@
     }
 
     function viewSavedResults() {
-      console.log('Viewing saved results');
-      try {
-        database.ref('results').once('value', snapshot => {
-          const savedResults = snapshot.val();
-          const resultsList = document.getElementById('saved-results-list');
-          resultsList.innerHTML = '';
+  console.log('Attempting to view saved results');
+  const resultsList = document.getElementById('saved-results-list');
+  resultsList.innerHTML = '<p>Loading results...</p>';
 
-          if (!savedResults) {
-            resultsList.innerHTML = '<p>No saved results found.</p>';
-          } else {
-            const resultsArray = Object.entries(savedResults).map(([id, result]) => ({ id, ...result }));
-            resultsArray.forEach((result, index) => {
-              const resultDiv = document.createElement('div');
-              resultDiv.className = 'saved-result-item';
-              
-              resultDiv.innerHTML = `
-                <h3>Test #${index + 1} - ${result.studentInfo.name} ${result.studentInfo.surname}</h3>
-                <div class="saved-result-meta">
-                  <span><strong>Date:</strong> ${new Date(result.testDate).toLocaleString()}</span>
-                  <span><strong>Phone:</strong> ${result.studentInfo.phone}</span>
-                </div>
-                <div class="saved-result-meta">
-                  <span class="saved-result-score">Score: ${result.score}/${result.totalQuestions}</span>
-                  <span><strong>Group:</strong> ${result.group}</span>
-                </div>
-              `;
-              
-              resultsList.appendChild(resultDiv);
-            });
-          }
-          
-          document.getElementById('result-screen').classList.add('hidden');
-          document.getElementById('saved-results-screen').classList.remove('hidden');
-        }).catch(error => {
-          console.error('Error fetching results:', error);
-          alert('Failed to load saved results.');
-        });
-      } catch (error) {
-        console.error('Firebase not initialized:', error);
-        alert('Failed to load saved results.');
-      }
+  // Try Firebase first
+  if (database) {
+    try {
+      const resultsRef = ref(database, 'results');
+      onValue(resultsRef, (snapshot) => {
+        const savedResults = snapshot.val();
+        resultsList.innerHTML = '';
+
+        if (!savedResults) {
+          resultsList.innerHTML = '<p>No saved results found in Firebase.</p>';
+          checkLocalStorage(); // Fallback to local storage
+        } else {
+          const resultsArray = Object.entries(savedResults).map(([id, result]) => ({ id, ...result }));
+          displayResults(resultsArray, false);
+          checkLocalStorage(); // Also show any local results
+        }
+      }, {
+        onlyOnce: true // Only fetch the data once, not for real-time updates
+      });
+    } catch (error) {
+      console.error('Firebase error:', error);
+      checkLocalStorage();
     }
+  } else {
+    checkLocalStorage();
+  }
+}
+
+// Helper function to display results (used by both Firebase and local storage)
+function displayResults(resultsArray, isLocal) {
+  const resultsList = document.getElementById('saved-results-list');
+  
+  if (resultsArray.length === 0) {
+    resultsList.innerHTML = `<p>No ${isLocal ? 'local' : ''} results found.</p>`;
+    return;
+  }
+
+  resultsArray.forEach((result, index) => {
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'saved-result-item';
+    if (isLocal) resultDiv.style.borderLeft = '4px solid orange';
+    
+    resultDiv.innerHTML = `
+      <h3>${isLocal ? '[Local] ' : ''}Test #${index + 1} - ${result.studentInfo.name} ${result.studentInfo.surname}</h3>
+      <div class="saved-result-meta">
+        <span><strong>Date:</strong> ${new Date(result.testDate).toLocaleString()}</span>
+        <span><strong>Phone:</strong> ${result.studentInfo.phone}</span>
+      </div>
+      <div class="saved-result-meta">
+        <span class="saved-result-score">Score: ${result.score}/${result.totalQuestions}</span>
+        <span><strong>Group:</strong> ${result.group}</span>
+      </div>
+      ${isLocal ? '<p><i class="fas fa-info-circle"></i> This result is stored locally</p>' : ''}
+    `;
+    
+    resultsList.appendChild(resultDiv);
+  });
+  
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('saved-results-screen').classList.remove('hidden');
+}
+
+// Check local storage for any unsynced results
+function checkLocalStorage() {
+  try {
+    const localResults = JSON.parse(localStorage.getItem('satmakonResults')) || [];
+    if (localResults.length > 0) {
+      displayResults(localResults, true);
+    } else if (document.getElementById('saved-results-list').innerHTML.includes('Loading')) {
+      document.getElementById('saved-results-list').innerHTML = '<p>No results found in Firebase or locally.</p>';
+    }
+  } catch (error) {
+    console.error('LocalStorage error:', error);
+  }
+}
 
     function backToResults() {
       console.log('Returning to results screen');
