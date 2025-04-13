@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SATMAKON Math Level Test</title>
   <link rel="icon" href="favicon.png" type="image/x-icon">
-<link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
@@ -75,23 +75,28 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-display: flex;
-  align-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
     }
-.logo-container {
-  flex-shrink: 0; /* Prevents logo from shrinking */
-}
 
-.logo {
-  height: 50px; /* Ideal size for your layout */
-  width: auto;
-  transition: transform 0.3s ease;
-}
+    .logo-container {
+      margin-right: 1.5rem;
+      flex-shrink: 0;
+    }
 
-.header-text {
-  flex: 1;
-  padding-left: 1.5rem; /* Matches your header padding */
-}
+    .logo {
+      height: 50px;
+      width: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .header-text {
+      flex: 1;
+      min-width: 250px;
+    }
+
     .header::before {
       content: "";
       position: absolute;
@@ -534,28 +539,29 @@ display: flex;
     }
 
     .admin-controls {
-  margin: 1.5rem 0;
-  padding: 1rem;
-  background: var(--light);
-  border-radius: var(--radius);
-}
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: var(--light);
+      border-radius: var(--radius);
+    }
 
-.admin-login-form {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
+    .admin-login-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
 
-.admin-login-form input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid var(--light-gray);
-  border-radius: var(--radius-sm);
-}
+    .admin-login-form input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--radius-sm);
+    }
 
-.admin-only {
-  display: none !important;
-}
+    .admin-only {
+      display: none !important;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -565,28 +571,22 @@ display: flex;
       animation: fadeIn 0.5s ease forwards;
     }
 
-    /* Google Form Container Styles */
-    #google-form-container {
-      margin: 20px auto;
-      max-width: 800px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
+    /* Responsive adjustments */
     @media (max-width: 640px) {
       .header {
         flex-direction: column;
-    text-align: center;
+        text-align: center;
         padding: 1.5rem 1rem;
       }
-       .logo {
-    height: 40px;
-    margin-bottom: 1rem;
-  }
-  .header-text {
-    padding-left: 0;
-  }
+      
+      .logo-container {
+        margin-right: 0;
+        margin-bottom: 1rem;
+      }
+      
+      .logo {
+        height: 40px;
+      }
       
       h1 {
         font-size: 1.5rem;
@@ -617,6 +617,13 @@ display: flex;
       .admin-login-form {
         flex-direction: column;
       }
+      
+      .timer {
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
     }
   </style>
 </head>
@@ -628,12 +635,13 @@ display: flex;
   
   <main class="container">
     <div class="header">
-      <div class="logo-container" style="margin-right: 1.5rem;">
-        <img src="favicon.png" alt="SATMAKON Logo" class="logo" style="height: 50px;">
+      <div class="logo-container">
+        <img src="logo.png" alt="SATMAKON Logo" class="logo">
       </div>
-<div class="header-text">
-      <h1>SATMAKON Math Level Test</h1>
-      <p>Assess your math skills and find your perfect learning path</p>
+      <div class="header-text">
+        <h1>SATMAKON Math Level Test</h1>
+        <p>Assess your math skills and find your perfect learning path</p>
+      </div>
     </div>
     
     <section id="start-screen" class="content">
@@ -657,23 +665,23 @@ display: flex;
           <span>Immediate results with personalized feedback</span>
         </div>
       </div>
-      <!-- In the start-screen section, add this before the start button -->
-<div class="admin-controls" id="admin-controls">
-  <div id="admin-login-section">
-    <h3>Admin Access</h3>
-    <div class="admin-login-form">
-      <input type="password" id="admin-password" placeholder="Enter admin password" class="form-control">
-      <button class="btn" onclick="checkAdminPassword()">
-        <i class="fas fa-lock"></i> Login
-      </button>
-    </div>
-  </div>
-  <div id="admin-actions" class="hidden">
-    <button class="btn btn-block" onclick="viewSavedResults()">
-      <i class="fas fa-list"></i> View All Results
-    </button>
-  </div>
-</div>
+      
+      <div class="admin-controls" id="admin-controls">
+        <div id="admin-login-section">
+          <h3>Admin Access</h3>
+          <div class="admin-login-form">
+            <input type="password" id="admin-password" placeholder="Enter admin password" class="form-control">
+            <button class="btn" onclick="checkAdminPassword()">
+              <i class="fas fa-lock"></i> Login
+            </button>
+          </div>
+        </div>
+        <div id="admin-actions" class="hidden">
+          <button class="btn btn-block" onclick="viewSavedResults()">
+            <i class="fas fa-list"></i> View All Results
+          </button>
+        </div>
+      </div>
 
       <button class="btn btn-lg btn-block" id="start-test-btn">
         <i class="fas fa-play"></i> Start Test
@@ -1243,37 +1251,36 @@ display: flex;
     }
 
     function submitToGoogleSheets(score, groupName) {
-  const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw/formResponse';
-  
-  const formData = new URLSearchParams();
-  formData.append('entry.1296235762', studentInfo.name);      // Name
-  formData.append('entry.1542197994', studentInfo.surname);   // Surname
-  formData.append('entry.2100332767', studentInfo.phone);     // Phone
-  formData.append('entry.893180088', score.toString());       // Score
-  formData.append('entry.1652722169', groupName);             // Group
-  // formData.append('entry.XXXXXX', studentInfo.testDate);   // Uncomment if you have date field
+      const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw/formResponse';
+      
+      const formData = new URLSearchParams();
+      formData.append('entry.1296235762', studentInfo.name);      // Name
+      formData.append('entry.1542197994', studentInfo.surname);   // Surname
+      formData.append('entry.2100332767', studentInfo.phone);     // Phone
+      formData.append('entry.893180088', score.toString());       // Score
+      formData.append('entry.1652722169', groupName);             // Group
+      // formData.append('entry.XXXXXX', studentInfo.testDate);   // Uncomment if you have date field
 
-  fetch(formUrl, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: formData
-  })
-  .then(() => {
-    console.log('Form submitted successfully');
-    // Optional: Show success message to user
-    alert('Your results have been saved successfully!');
-  })
-  .catch(error => {
-    console.error('Error submitting form:', error);
-    // Optional: Show error message to user
-    alert('There was an error saving your results. Please try again.');
-  });
-} // THIS WAS MISSING IN YOUR CODE
+      fetch(formUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+      })
+      .then(() => {
+        console.log('Form submitted successfully');
+        // Optional: Show success message to user
+        alert('Your results have been saved successfully!');
+      })
+      .catch(error => {
+        console.error('Error submitting form:', error);
+        // Optional: Show error message to user
+        alert('There was an error saving your results. Please try again.');
+      });
+    }
 
-function checkAdminPassword() {
     function checkAdminPassword() {
       console.log('Checking admin password');
       const ADMIN_PASSWORD = "satmakon123";
