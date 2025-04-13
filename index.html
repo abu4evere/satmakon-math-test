@@ -7,6 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"></script>
   <style>
     :root {
       --primary: #3B2289;
@@ -245,11 +247,10 @@
       position: absolute;
     }
 
-    .option-radio {
+    .option-radio, .option-checkbox {
       width: 1.25rem;
       height: 1.25rem;
       border: 2px solid var(--gray);
-      border-radius: 50%;
       flex-shrink: 0;
       margin-top: 0.125rem;
       display: flex;
@@ -258,7 +259,15 @@
       transition: all 0.2s ease;
     }
 
-    .option.selected .option-radio {
+    .option-radio {
+      border-radius: 50%;
+    }
+
+    .option-checkbox {
+      border-radius: 4px;
+    }
+
+    .option.selected .option-radio, .option.selected .option-checkbox {
       border-color: var(--primary);
       background: var(--primary);
     }
@@ -273,7 +282,17 @@
       transition: opacity 0.2s ease;
     }
 
-    .option.selected .option-radio::after {
+    .option-checkbox::after {
+      content: "\f00c";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      color: var(--white);
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .option.selected .option-radio::after, .option.selected .option-checkbox::after {
       opacity: 1;
     }
 
@@ -376,7 +395,6 @@
       color: var(--primary);
     }
 
-    /* Modal Styles */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -441,7 +459,6 @@
       color: var(--danger);
     }
 
-    /* Form Styles */
     .form-group {
       margin-bottom: 1.5rem;
     }
@@ -476,7 +493,6 @@
       display: none;
     }
 
-    /* Saved Results Styles */
     .saved-result-item {
       background: var(--light);
       border-radius: var(--radius);
@@ -501,7 +517,6 @@
       color: var(--primary-dark);
     }
 
-    /* Admin Controls */
     .admin-controls {
       margin-top: 2rem;
       padding: 1rem;
@@ -525,12 +540,7 @@
     .admin-only {
       display: none;
     }
-    
-    .admin-visible {
-      display: block;
-    }
 
-    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -540,7 +550,6 @@
       animation: fadeIn 0.5s ease forwards;
     }
 
-    /* Responsive styles */
     @media (max-width: 640px) {
       .header {
         padding: 1.5rem 1rem;
@@ -691,7 +700,6 @@
     </section>
   </main>
 
-  <!-- Student Info Modal -->
   <div class="modal-overlay" id="student-info-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -729,6 +737,26 @@
   </div>
 
   <script>
+    console.log('Script loaded');
+    // Initialize Firebase
+    const firebaseConfig = {
+      // REPLACE WITH YOUR FIREBASE CONFIG
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    try {
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+      console.log('Firebase initialized');
+    } catch (error) {
+      console.error('Firebase init error:', error);
+    }
+
     const questions = [
       {
         question: "If 3(x − 5) = 15, what does <sup>x−5</sup>⁄<sub>x+5</sub> equal?",
@@ -747,8 +775,8 @@
       },
       {
         question: "If 2y + 5 = −3y + 12x, what is the value of y in terms of x?",
-        options: ["(12x + 5) / (2x + 3)", "(12x − 5) / (2x + 3)", "(12x + 5) / (2x − 3)", "(12x − 5) / (2x − 3)"],
-        correct: "(12x − 5) / 5"
+        options: ["(12x + 5) / (2 + 3)", "(12x − 5) / (2 + 3)", "(12x + 5) / (2 − 3)", "(12x − 5) / (2 − 3)"],
+        correct: "(12x − 5) / (2 − 3)"
       },
       {
         question: "9x − 13 ≤ 2x + 8<br>Which of the following is the solution set for this inequality?",
@@ -786,7 +814,7 @@
           "The number of electronic bikes sold by this particular retailer is increasing by 760 per year.",
           "The number of bikes sold by this particular retailer in 2020 is 494 more than the number sold in 2019.",
           "The number of electronic bikes sold by this particular retailer is increasing by 165% per year.",
-          "The number of bikes sold by this particular retailer is decreasing by 65% each year."
+          "The number of electronic bikes sold by this particular retailer is increasing by 65% per year."
         ],
         correct: "The number of electronic bikes sold by this particular retailer is increasing by 65% per year."
       },
@@ -818,7 +846,8 @@
       {
         question: "(x-1)<sup>2</sup>=3x-5<br>What is one possible solution to the equation above?",
         options: ["2", "3", "7", "1"],
-        correct: ["2", "3"]
+        correct: ["2", "3"],
+        multiSelect: true
       },
       {
         question: "In the xy-plane, which of the following points lies in the interior of a circle with the equation (x+h)<sup>2</sup>+(y+k)<sup>2</sup>=289",
@@ -863,7 +892,8 @@
       {
         question: "Find the value of y<br>22 - | y + 14 | = 20",
         options: ["-12", "-14", "2", "-16"],
-        correct: ["-12", "-16"]
+        correct: ["-12", "-16"],
+        multiSelect: true
       },
       {
         question: "<img src='./26.PNG' alt='Geometric figure showing angle AED' style='width: 300px; height: auto;'><br>In the geometric figure shown here, JK = KL, LM = MN, and triangle KLM is a right triangle. If x=115 then angle LMN measures which of the following?",
@@ -903,30 +933,42 @@
       testDate: ''
     };
 
-    // Initialize the modal and form
+    console.log('Setting up event listeners');
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded');
       const modal = document.getElementById('student-info-modal');
       const startTestBtn = document.getElementById('start-test-btn');
       const studentInfoForm = document.getElementById('student-info-form');
       
-      // Show modal when Start Test button is clicked
+      if (!startTestBtn) {
+        console.error('Start Test button not found');
+        return;
+      }
+      if (!modal) {
+        console.error('Modal not found');
+        return;
+      }
+      if (!studentInfoForm) {
+        console.error('Student info form not found');
+        return;
+      }
+
+      console.log('Attaching start button listener');
       startTestBtn.addEventListener('click', function() {
+        console.log('Start Test button clicked');
         modal.classList.add('active');
       });
       
-      // Handle form submission
       studentInfoForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        console.log('Form submitted');
         
-        // Get form values
         const name = document.getElementById('student-name').value.trim();
         const surname = document.getElementById('student-surname').value.trim();
         const phone = document.getElementById('student-phone').value.trim();
         
-        // Validate form
         let isValid = true;
         
-        // Name validation
         if (!name) {
           document.getElementById('name-error').style.display = 'block';
           isValid = false;
@@ -934,7 +976,6 @@
           document.getElementById('name-error').style.display = 'none';
         }
         
-        // Surname validation
         if (!surname) {
           document.getElementById('surname-error').style.display = 'block';
           isValid = false;
@@ -942,7 +983,6 @@
           document.getElementById('surname-error').style.display = 'none';
         }
         
-        // Phone validation
         if (!phone || !/^[\d\s\-()+]{8,}$/.test(phone)) {
           document.getElementById('phone-error').style.display = 'block';
           isValid = false;
@@ -951,34 +991,33 @@
         }
         
         if (isValid) {
-          // Save student info
           studentInfo = {
             name,
             surname,
             phone,
             testDate: new Date().toLocaleString()
           };
+          console.log('Student info saved:', studentInfo);
           
-          // Close modal
           modal.classList.remove('active');
-          
-          // Start the test
           startTest();
         }
       });
       
-      // Initialize quiz form submission
       document.getElementById("quiz-form").addEventListener("submit", function(event) {
         event.preventDefault();
+        console.log('Quiz form submitted');
         submitQuiz();
       });
     });
 
     function closeStudentInfoModal() {
+      console.log('Closing modal');
       document.getElementById('student-info-modal').classList.remove('active');
     }
 
     function startTest() {
+      console.log('Starting test');
       const startScreen = document.getElementById("start-screen");
       const testScreen = document.getElementById("test-screen");
       const timer = document.getElementById("timer");
@@ -992,21 +1031,28 @@
     }
 
     function loadQuestions() {
+      console.log('Loading questions');
       const container = document.getElementById("questions-container");
       container.innerHTML = '';
       
       questions.forEach((q, index) => {
+        const inputType = q.multiSelect ? 'checkbox' : 'radio';
+        const inputClass = q.multiSelect ? 'option-checkbox' : 'option-radio';
         const div = document.createElement("div");
-        div.className = `question ${userAnswers[index] !== null ? 'answered' : ''}`;
+        div.className = `question ${userAnswers[index] !== null && (Array.isArray(userAnswers[index]) ? userAnswers[index].length > 0 : true) ? 'answered' : ''}`;
         div.innerHTML = `
           <div class="question-number">${index + 1}</div>
           <h3>${q.question}</h3>
           <div class="options">
             ${q.options.map((option, optIndex) => `
-              <label class="option ${userAnswers[index] === option ? 'selected' : ''}">
-                <input type="radio" name="q${index}" value="${option}" 
-                  ${userAnswers[index] === option ? 'checked' : ''}>
-                <span class="option-radio"></span>
+              <label class="option ${
+                Array.isArray(userAnswers[index])
+                  ? userAnswers[index].includes(option) ? 'selected' : ''
+                  : userAnswers[index] === option ? 'selected' : ''
+              }">
+                <input type="${inputType}" name="q${index}" value="${option}"
+                  ${Array.isArray(userAnswers[index]) ? (userAnswers[index].includes(option) ? 'checked' : '') : (userAnswers[index] === option ? 'checked' : '')}>
+                <span class="${inputClass}"></span>
                 <span class="option-text">${option}</span>
               </label>
             `).join('')}
@@ -1018,33 +1064,43 @@
 
       document.getElementById("total-questions").textContent = questions.length;
       
-      // Add event listeners for radio buttons
       document.querySelectorAll('.option').forEach(option => {
         option.addEventListener('click', function() {
+          console.log('Option clicked:', this);
           const input = this.querySelector('input');
           const questionIndex = parseInt(input.name.substring(1));
-          
-          // Deselect all options in this question
-          document.querySelectorAll(`input[name="q${questionIndex}"]`).forEach(inp => {
-            inp.closest('.option').classList.remove('selected');
-          });
-          
-          // Select clicked option
-          this.classList.add('selected');
-          input.checked = true;
-          
-          // Update userAnswers
-          userAnswers[questionIndex] = input.value;
-          
-          // Mark question as answered
-          this.closest('.question').classList.add('answered');
-          
+          const question = questions[questionIndex];
+
+          if (question.multiSelect) {
+            userAnswers[questionIndex] = userAnswers[questionIndex] || [];
+            if (input.checked) {
+              if (!userAnswers[questionIndex].includes(input.value)) {
+                userAnswers[questionIndex].push(input.value);
+              }
+            } else {
+              userAnswers[questionIndex] = userAnswers[questionIndex].filter(val => val !== input.value);
+            }
+            document.querySelectorAll(`input[name="q${questionIndex}"]`).forEach(inp => {
+              inp.closest('.option').classList.toggle('selected', inp.checked);
+            });
+          } else {
+            document.querySelectorAll(`input[name="q${questionIndex}"]`).forEach(inp => {
+              inp.closest('.option').classList.remove('selected');
+              inp.checked = false;
+            });
+            input.checked = true;
+            this.classList.add('selected');
+            userAnswers[questionIndex] = input.value;
+          }
+
+          this.closest('.question').classList.toggle('answered', userAnswers[questionIndex] !== null && (Array.isArray(userAnswers[questionIndex]) ? userAnswers[questionIndex].length > 0 : true));
           updateProgress();
         });
       });
     }
 
     function startTimer() {
+      console.log('Starting timer');
       const timerDisplay = document.getElementById("timer-text");
       
       timerInterval = setInterval(() => {
@@ -1052,7 +1108,7 @@
         const seconds = timeLeft % 60;
         timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-        if (timeLeft <= 300) { // 5 minutes left
+        if (timeLeft <= 300) {
           document.getElementById("timer").classList.add("low-time");
         }
 
@@ -1065,7 +1121,8 @@
     }
 
     function updateProgress() {
-      const answeredCount = userAnswers.filter(answer => answer !== null).length;
+      console.log('Updating progress');
+      const answeredCount = userAnswers.filter(answer => answer !== null && (Array.isArray(answer) ? answer.length > 0 : true)).length;
       const totalQuestions = questions.length;
       const progressPercentage = Math.round((answeredCount / totalQuestions) * 100);
       
@@ -1075,6 +1132,7 @@
     }
 
     function determineGroup(score) {
+      console.log('Determining group for score:', score);
       if (score >= 0 && score <= 7) {
         return {
           name: "Pre-Foundation Math",
@@ -1103,6 +1161,7 @@
     }
 
     function animateValue(id, start, end, duration) {
+      console.log('Animating value for:', id);
       const obj = document.getElementById(id);
       let startTimestamp = null;
       const step = (timestamp) => {
@@ -1117,6 +1176,7 @@
     }
 
     function submitQuiz() {
+      console.log('Submitting quiz');
       clearInterval(timerInterval);
       document.getElementById("timer").classList.add("hidden");
       document.getElementById("test-screen").classList.add("hidden");
@@ -1124,8 +1184,10 @@
       let score = 0;
       questions.forEach((q, index) => {
         if (userAnswers[index] !== null) {
-          if (Array.isArray(q.correct)) {
-            if (q.correct.includes(userAnswers[index])) {
+          if (q.multiSelect) {
+            const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
+            const userAnswer = Array.isArray(userAnswers[index]) ? userAnswers[index] : [userAnswers[index]];
+            if (userAnswer.length === correctAnswers.length && userAnswer.every(val => correctAnswers.includes(val))) {
               score++;
             }
           } else {
@@ -1136,77 +1198,60 @@
         }
       });
 
-      const totalQuestions = questions.length;
       const group = determineGroup(score);
       
       document.getElementById("score-display").textContent = score;
       document.getElementById("group-badge").textContent = group.name;
       document.getElementById("result-message").textContent = group.message;
       
-      // Display student info
       document.getElementById("display-name").textContent = studentInfo.name;
       document.getElementById("display-surname").textContent = studentInfo.surname;
       document.getElementById("display-phone").textContent = studentInfo.phone;
       document.getElementById("test-date").textContent = studentInfo.testDate;
       
-      // Animate the score display
       animateValue("score-display", 0, score, 1000);
       
       document.getElementById("result-screen").classList.remove("hidden");
       
-      // Confetti celebration
       confetti({
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 }
       });
 
-      // Automatically save results
-      saveResults();
+      saveResults(score, group.name);
     }
 
-    function saveResults() {
-      // Calculate score
-      let score = 0;
-      questions.forEach((q, index) => {
-        if (userAnswers[index] !== null) {
-          if (Array.isArray(q.correct)) {
-            if (q.correct.includes(userAnswers[index])) {
-              score++;
-            }
-          } else {
-            if (userAnswers[index] === q.correct) {
-              score++;
-            }
-          }
-        }
-      });
-      
-      const group = determineGroup(score);
-      
-      // Prepare result data
+    function saveResults(score, groupName) {
+      console.log('Saving results');
       const resultData = {
         studentInfo,
         score,
         totalQuestions: questions.length,
-        group: group.name,
+        group: groupName,
         testDate: new Date().toISOString(),
         answers: userAnswers
       };
-      
-      // Save to localStorage
-      const savedResults = JSON.parse(localStorage.getItem('satmakonResults') || '[]');
-      savedResults.push(resultData);
-      localStorage.setItem('satmakonResults', JSON.stringify(savedResults));
+
+      try {
+        const newResultRef = database.ref('results').push();
+        newResultRef.set(resultData)
+          .then(() => console.log('Result saved to Firebase'))
+          .catch(error => {
+            console.error('Error saving result:', error);
+            alert('Failed to save result to cloud storage.');
+          });
+      } catch (error) {
+        console.error('Firebase not initialized:', error);
+      }
     }
-    
+
     function checkAdminPassword() {
-      // Set your admin password here (in a real app, this would be server-side)
-      const ADMIN_PASSWORD = "satmakon123"; // Change this to your desired password
+      console.log('Checking admin password');
+      const ADMIN_PASSWORD = "satmakon123";
       const passwordInput = document.getElementById('admin-password');
       
       if (passwordInput.value === ADMIN_PASSWORD) {
-        // Show admin features
         document.querySelectorAll('.admin-only').forEach(el => {
           el.style.display = 'block';
         });
@@ -1218,89 +1263,88 @@
         passwordInput.value = '';
       }
     }
-    
+
     function downloadAllResults() {
-      const savedResults = JSON.parse(localStorage.getItem('satmakonResults') || '[]');
-      if (savedResults.length === 0) {
-        alert('No results to download');
-        return;
-      }
-      
-      // Create CSV content
-      let csvContent = "Name,Surname,Phone,Score,Total Questions,Group,Test Date\n";
-      
-      savedResults.forEach(result => {
-        csvContent += `"${result.studentInfo.name}","${result.studentInfo.surname}","${result.studentInfo.phone}",${result.score},${result.totalQuestions},"${result.group}","${new Date(result.testDate).toLocaleString()}"\n`;
-      });
-      
-      // Create download link
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `SATMAKON_Results_${new Date().toISOString().slice(0,10)}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-    
-    function viewSavedResults() {
-      const savedResults = JSON.parse(localStorage.getItem('satmakonResults') || '[]');
-      const resultsList = document.getElementById('saved-results-list');
-      resultsList.innerHTML = '';
-      
-      if (savedResults.length === 0) {
-        resultsList.innerHTML = '<p>No saved results found.</p>';
-      } else {
-        savedResults.forEach((result, index) => {
-          const resultDiv = document.createElement('div');
-          resultDiv.className = 'saved-result-item';
-          
-          resultDiv.innerHTML = `
-            <h3>Test #${index + 1} - ${result.studentInfo.name} ${result.studentInfo.surname}</h3>
-            <div class="saved-result-meta">
-              <span><strong>Date:</strong> ${new Date(result.testDate).toLocaleString()}</span>
-              <span><strong>Phone:</strong> ${result.studentInfo.phone}</span>
-            </div>
-            <div class="saved-result-meta">
-              <span class="saved-result-score">Score: ${result.score}/${result.totalQuestions}</span>
-              <span><strong>Group:</strong> ${result.group}</span>
-            </div>
-            <button class="btn" onclick="downloadSingleResult(${index})" style="margin-top: 0.5rem;">
-              <i class="fas fa-download"></i> Download
-            </button>
-          `;
-          
-          resultsList.appendChild(resultDiv);
+      console.log('Downloading all results');
+      try {
+        database.ref('results').once('value', snapshot => {
+          const savedResults = snapshot.val();
+          if (!savedResults) {
+            alert('No results to download');
+            return;
+          }
+
+          let csvContent = "Name,Surname,Phone,Score,Total Questions,Group,Test Date\n";
+          Object.values(savedResults).forEach(result => {
+            csvContent += `"${result.studentInfo.name}","${result.studentInfo.surname}","${result.studentInfo.phone}",${result.score},${result.totalQuestions},"${result.group}","${new Date(result.testDate).toLocaleString()}"\n`;
+          });
+
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `SATMAKON_Results_${new Date().toISOString().slice(0,10)}.csv`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }).catch(error => {
+          console.error('Error fetching results:', error);
+          alert('Failed to download results.');
         });
+      } catch (error) {
+        console.error('Firebase not initialized:', error);
+        alert('Failed to download results.');
       }
-      
-      document.getElementById('result-screen').classList.add('hidden');
-      document.getElementById('saved-results-screen').classList.remove('hidden');
     }
-    
+
+    function viewSavedResults() {
+      console.log('Viewing saved results');
+      try {
+        database.ref('results').once('value', snapshot => {
+          const savedResults = snapshot.val();
+          const resultsList = document.getElementById('saved-results-list');
+          resultsList.innerHTML = '';
+
+          if (!savedResults) {
+            resultsList.innerHTML = '<p>No saved results found.</p>';
+          } else {
+            const resultsArray = Object.entries(savedResults).map(([id, result]) => ({ id, ...result }));
+            resultsArray.forEach((result, index) => {
+              const resultDiv = document.createElement('div');
+              resultDiv.className = 'saved-result-item';
+              
+              resultDiv.innerHTML = `
+                <h3>Test #${index + 1} - ${result.studentInfo.name} ${result.studentInfo.surname}</h3>
+                <div class="saved-result-meta">
+                  <span><strong>Date:</strong> ${new Date(result.testDate).toLocaleString()}</span>
+                  <span><strong>Phone:</strong> ${result.studentInfo.phone}</span>
+                </div>
+                <div class="saved-result-meta">
+                  <span class="saved-result-score">Score: ${result.score}/${result.totalQuestions}</span>
+                  <span><strong>Group:</strong> ${result.group}</span>
+                </div>
+              `;
+              
+              resultsList.appendChild(resultDiv);
+            });
+          }
+          
+          document.getElementById('result-screen').classList.add('hidden');
+          document.getElementById('saved-results-screen').classList.remove('hidden');
+        }).catch(error => {
+          console.error('Error fetching results:', error);
+          alert('Failed to load saved results.');
+        });
+      } catch (error) {
+        console.error('Firebase not initialized:', error);
+        alert('Failed to load saved results.');
+      }
+    }
+
     function backToResults() {
+      console.log('Returning to results screen');
       document.getElementById('saved-results-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.remove('hidden');
-    }
-    
-    function downloadSingleResult(index) {
-      const savedResults = JSON.parse(localStorage.getItem('satmakonResults') || '[]');
-      if (index >= 0 && index < savedResults.length) {
-        downloadResults(savedResults[index]);
-      }
-    }
-    
-    function downloadResults(data) {
-      // Create a blob with the results
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `SATMAKON_Results_${data.studentInfo.name}_${data.studentInfo.surname}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
     }
   </script>
 </body>
