@@ -689,7 +689,7 @@
       
       <!-- Google Form Container -->
       <div id="google-form-container">
-        <iframe src="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true" 
+        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw/viewform?embedded=true" 
                 width="100%" 
                 height="800" 
                 frameborder="0" 
@@ -1225,48 +1225,39 @@
     }
 
     function submitToGoogleSheets(score, groupName) {
-      // Replace with your Google Form ID and entry IDs
-      const formId = '1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw';
-      const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw/viewform?usp=pp_url&entry.1296235762=Abdurashid&entry.1542197994=Xudoyberdiyev&entry.2100332767=779991795&entry.893180088=12&entry.1652722169=Foundation+Math`;
-      
-      // These are the entry IDs from your Google Form
-      // You need to replace them with your actual entry IDs
-      const entryIds = {
-  name: 'entry.1296235762',      // Name (from your prefill URL)
-  surname: 'entry.1542197994',   // Surname (from your prefill URL)
-  phone: 'entry.2100332767',     // Phone (from your prefill URL)
-  score: 'entry.893180088',      // Score (from your prefill URL)
-  group: 'entry.1652722169',     // Group (from your prefill URL)
-  date: 'entry.XXXXXX'           // Add this if you have a date field (get its ID)
-};
-      
- const formData = new URLSearchParams();  // Changed from FormData() to URLSearchParams()
-formData.append('entry.1296235762', studentInfo.name);      // Name
-formData.append('entry.1542197994', studentInfo.surname);   // Surname
-formData.append('entry.2100332767', studentInfo.phone);     // Phone
-formData.append('entry.893180088', score.toString());       // Score
-formData.append('entry.1652722169', groupName);             // Group
-// formData.append('entry.XXXXXX', studentInfo.testDate);   // Uncomment if you have date field
+  const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw/formResponse';
+  
+  const formData = new URLSearchParams();
+  formData.append('entry.1296235762', studentInfo.name);      // Name
+  formData.append('entry.1542197994', studentInfo.surname);   // Surname
+  formData.append('entry.2100332767', studentInfo.phone);     // Phone
+  formData.append('entry.893180088', score.toString());       // Score
+  formData.append('entry.1652722169', groupName);             // Group
+  // formData.append('entry.XXXXXX', studentInfo.testDate);   // Uncomment if you have date field
 
-// Submit the form data
-fetch(formUrl, {
-  method: 'POST',
-  mode: 'no-cors',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'  // Required for URLSearchParams
-  },
-  body: formData
-})
-.then(() => {
-  console.log('Form submitted successfully');
-  // Optional: Show success message to user
-  alert('Your results have been saved successfully!');
-})
-.catch(error => {
-  console.error('Error submitting form:', error);
-  // Optional: Show error message to user
-  alert('There was an error saving your results. Please try again.');
-});
+  fetch(formUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: formData
+  })
+  .then(() => {
+    console.log('Form submitted successfully');
+    // Optional: Show success message to user
+    alert('Your results have been saved successfully!');
+  })
+  .catch(error => {
+    console.error('Error submitting form:', error);
+    // Optional: Show error message to user
+    alert('There was an error saving your results. Please try again.');
+  });
+} // THIS WAS MISSING IN YOUR CODE
+
+function checkAdminPassword() {
+  // ... rest of your admin password code ...
+}
     function checkAdminPassword() {
       console.log('Checking admin password');
       const ADMIN_PASSWORD = "satmakon123";
