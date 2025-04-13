@@ -7,36 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-<script type="module">
-  // Import the functions you need from the SDKs
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyABhFpHFKnM3BtqbGNbe6lH6tESeYt0tpo",
-    authDomain: "satmakonmath.firebaseapp.com",
-    databaseURL: "https://satmakonmath-default-rtdb.firebaseio.com",
-    projectId: "satmakonmath",
-    storageBucket: "satmakonmath.firebasestorage.app",
-    messagingSenderId: "251847690674",
-    appId: "1:251847690674:web:8ff67992e002081d11bcab",
-    measurementId: "G-WDSB73N8FX"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-  
-  // Make database available globally (for your existing functions)
-  window.database = database;
-  window.firebaseRef = ref;
-  window.firebasePush = push;
-  window.firebaseSet = set;
-  window.firebaseOnValue = onValue;
-  
-  console.log("Firebase initialized successfully!");
-</script>
   
   <style>
     :root {
@@ -578,6 +548,15 @@
       animation: fadeIn 0.5s ease forwards;
     }
 
+    /* Google Form Container Styles */
+    #google-form-container {
+      margin: 20px auto;
+      max-width: 800px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
     @media (max-width: 640px) {
       .header {
         padding: 1.5rem 1rem;
@@ -660,10 +639,7 @@
     </div>
   </div>
   <div id="admin-actions" class="hidden">
-    <button class="btn btn-block" onclick="downloadAllResults()">
-      <i class="fas fa-download"></i> Download All Results
-    </button>
-    <button class="btn btn-block" onclick="viewSavedResults()" style="margin-top: 0.5rem;">
+    <button class="btn btn-block" onclick="viewSavedResults()">
       <i class="fas fa-list"></i> View All Results
     </button>
   </div>
@@ -711,27 +687,22 @@
         </div>
       </div>
       
+      <!-- Google Form Container -->
+      <div id="google-form-container">
+        <iframe src="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true" 
+                width="100%" 
+                height="800" 
+                frameborder="0" 
+                marginheight="0" 
+                marginwidth="0">
+          Loading...
+        </iframe>
+      </div>
+      
       <div class="btn-group" style="display: flex; gap: 1rem; margin-top: 1rem;">
         <button class="btn btn-lg admin-only" onclick="viewSavedResults()" style="flex: 1;">
           <i class="fas fa-list"></i> View All Results
         </button>
-      </div>
-      
-      <div class="admin-controls" id="admin-controls">
-        <div id="admin-login-section">
-          <h3>Admin Access</h3>
-          <div class="admin-login-form">
-            <input type="password" id="admin-password" placeholder="Enter admin password" class="form-control">
-            <button class="btn" onclick="checkAdminPassword()">
-              <i class="fas fa-lock"></i> Login
-            </button>
-          </div>
-        </div>
-        <div id="admin-actions" class="hidden">
-          <button class="btn btn-block" onclick="downloadAllResults()">
-            <i class="fas fa-download"></i> Download All Results
-          </button>
-        </div>
       </div>
     </section>
 
@@ -786,25 +757,7 @@
 
   <script>
     console.log('Script loaded');
-    // Initialize Firebase
-    const firebaseConfig = {
-      // REPLACE WITH YOUR FIREBASE CONFIG
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-    try {
-      firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
-      console.log('Firebase initialized');
-    } catch (error) {
-      console.error('Firebase init error:', error);
-    }
-
+    
     const questions = [
       {
         question: "If 3(x − 5) = 15, what does <sup>x−5</sup>⁄<sub>x+5</sub> equal?",
@@ -1267,37 +1220,43 @@
         origin: { y: 0.6 }
       });
 
-      saveResults(score, group.name);
+      // Submit data to Google Sheets
+      submitToGoogleSheets(score, group.name);
     }
 
-    function saveResults(score, groupName) {
-  const resultData = {
-    studentInfo,
-    score,
-    totalQuestions: questions.length,
-    group: groupName,
-    testDate: new Date().toISOString(),
-    answers: userAnswers
-  };
-
-  if (database) {
-    try {
-      const resultsRef = ref(database, 'results');
-      const newResultRef = push(resultsRef);
-      set(newResultRef, resultData)
-        .then(() => console.log('Result saved to Firebase'))
-        .catch(error => {
-          console.error('Error saving result:', error);
-          saveToLocalStorage(resultData);
-        });
-    } catch (error) {
-      console.error('Firebase error:', error);
-      saveToLocalStorage(resultData);
+    function submitToGoogleSheets(score, groupName) {
+      // Replace with your Google Form ID and entry IDs
+      const formId = 'YOUR_FORM_ID';
+      const formUrl = `https://docs.google.com/forms/d/e/${formId}/formResponse`;
+      
+      // These are the entry IDs from your Google Form
+      // You need to replace them with your actual entry IDs
+      const entryIds = {
+        name: 'entry.123456789',
+        surname: 'entry.987654321',
+        phone: 'entry.555555555',
+        score: 'entry.444444444',
+        group: 'entry.333333333',
+        date: 'entry.222222222'
+      };
+      
+      const formData = new FormData();
+      formData.append(entryIds.name, studentInfo.name);
+      formData.append(entryIds.surname, studentInfo.surname);
+      formData.append(entryIds.phone, studentInfo.phone);
+      formData.append(entryIds.score, score.toString());
+      formData.append(entryIds.group, groupName);
+      formData.append(entryIds.date, studentInfo.testDate);
+      
+      // Submit the form data
+      fetch(formUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData
+      })
+      .then(() => console.log('Form submitted successfully'))
+      .catch(error => console.error('Error submitting form:', error));
     }
-  } else {
-    saveToLocalStorage(resultData);
-  }
-}
 
     function checkAdminPassword() {
       console.log('Checking admin password');
@@ -1317,119 +1276,14 @@
       }
     }
 
-    function downloadAllResults() {
-      console.log('Downloading all results');
-      try {
-        database.ref('results').once('value', snapshot => {
-          const savedResults = snapshot.val();
-          if (!savedResults) {
-            alert('No results to download');
-            return;
-          }
-
-          let csvContent = "Name,Surname,Phone,Score,Total Questions,Group,Test Date\n";
-          Object.values(savedResults).forEach(result => {
-            csvContent += `"${result.studentInfo.name}","${result.studentInfo.surname}","${result.studentInfo.phone}",${result.score},${result.totalQuestions},"${result.group}","${new Date(result.testDate).toLocaleString()}"\n`;
-          });
-
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `SATMAKON_Results_${new Date().toISOString().slice(0,10)}.csv`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }).catch(error => {
-          console.error('Error fetching results:', error);
-          alert('Failed to download results.');
-        });
-      } catch (error) {
-        console.error('Firebase not initialized:', error);
-        alert('Failed to download results.');
-      }
-    }
-
     function viewSavedResults() {
-  console.log('Attempting to view saved results');
-  const resultsList = document.getElementById('saved-results-list');
-  resultsList.innerHTML = '<p>Loading results...</p>';
-
-  // Try Firebase first
-  if (database) {
-    try {
-      const resultsRef = ref(database, 'results');
-      onValue(resultsRef, (snapshot) => {
-        const savedResults = snapshot.val();
-        resultsList.innerHTML = '';
-
-        if (!savedResults) {
-          resultsList.innerHTML = '<p>No saved results found in Firebase.</p>';
-          checkLocalStorage(); // Fallback to local storage
-        } else {
-          const resultsArray = Object.entries(savedResults).map(([id, result]) => ({ id, ...result }));
-          displayResults(resultsArray, false);
-          checkLocalStorage(); // Also show any local results
-        }
-      }, {
-        onlyOnce: true // Only fetch the data once, not for real-time updates
-      });
-    } catch (error) {
-      console.error('Firebase error:', error);
-      checkLocalStorage();
+      console.log('Viewing saved results');
+      const resultsList = document.getElementById('saved-results-list');
+      resultsList.innerHTML = '<p>No results available (Google Sheets integration required for data storage)</p>';
+      
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('saved-results-screen').classList.remove('hidden');
     }
-  } else {
-    checkLocalStorage();
-  }
-}
-
-// Helper function to display results (used by both Firebase and local storage)
-function displayResults(resultsArray, isLocal) {
-  const resultsList = document.getElementById('saved-results-list');
-  
-  if (resultsArray.length === 0) {
-    resultsList.innerHTML = `<p>No ${isLocal ? 'local' : ''} results found.</p>`;
-    return;
-  }
-
-  resultsArray.forEach((result, index) => {
-    const resultDiv = document.createElement('div');
-    resultDiv.className = 'saved-result-item';
-    if (isLocal) resultDiv.style.borderLeft = '4px solid orange';
-    
-    resultDiv.innerHTML = `
-      <h3>${isLocal ? '[Local] ' : ''}Test #${index + 1} - ${result.studentInfo.name} ${result.studentInfo.surname}</h3>
-      <div class="saved-result-meta">
-        <span><strong>Date:</strong> ${new Date(result.testDate).toLocaleString()}</span>
-        <span><strong>Phone:</strong> ${result.studentInfo.phone}</span>
-      </div>
-      <div class="saved-result-meta">
-        <span class="saved-result-score">Score: ${result.score}/${result.totalQuestions}</span>
-        <span><strong>Group:</strong> ${result.group}</span>
-      </div>
-      ${isLocal ? '<p><i class="fas fa-info-circle"></i> This result is stored locally</p>' : ''}
-    `;
-    
-    resultsList.appendChild(resultDiv);
-  });
-  
-  document.getElementById('result-screen').classList.add('hidden');
-  document.getElementById('saved-results-screen').classList.remove('hidden');
-}
-
-// Check local storage for any unsynced results
-function checkLocalStorage() {
-  try {
-    const localResults = JSON.parse(localStorage.getItem('satmakonResults')) || [];
-    if (localResults.length > 0) {
-      displayResults(localResults, true);
-    } else if (document.getElementById('saved-results-list').innerHTML.includes('Loading')) {
-      document.getElementById('saved-results-list').innerHTML = '<p>No results found in Firebase or locally.</p>';
-    }
-  } catch (error) {
-    console.error('LocalStorage error:', error);
-  }
-}
 
     function backToResults() {
       console.log('Returning to results screen');
