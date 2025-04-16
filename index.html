@@ -765,6 +765,17 @@
   </div>
 
   <script>
+    fetch("https://ipapi.co/json/")
+  .then(res => res.json())
+  .then(data => {
+    console.log("Region Info:", data.region);
+    studentInfo.region = data.region;
+  })
+  .catch(err => {
+    console.error("Could not fetch region info", err);
+  });
+    console.log('Script loaded');
+    
     const questions = [
       {
         question: "If 3(x − 5) = 15, what does <sup>x−5</sup>⁄<sub>x+5</sub> equal?",
@@ -929,116 +940,374 @@
         correct: "21 hours and 14 minutes"
       }
     ];
+
     const totalTime = 45 * 60;
-  let timeLeft = totalTime;
-  let timerInterval;
-  let userAnswers = Array(questions.length).fill(null);
-  let studentInfo = {
-    name: '',
-    surname: '',
-    phone: '',
-    testDate: '',
-    region: ''
-  };
+    let timeLeft = totalTime;
+    let timerInterval;
+    let userAnswers = Array(questions.length).fill(null);
+    let studentInfo = {
+      name: '',
+      surname: '',
+      phone: '',
+      testDate: '',
+      region: ''
+    };
 
-  console.log('Setting up event listeners');
-  document.addEventListener('DOMContentLoaded', function () {
-    console.log('DOM loaded');
-    const modal = document.getElementById('student-info-modal');
-    const startTestBtn = document.getElementById('start-test-btn');
-    const studentInfoForm = document.getElementById('student-info-form');
+    console.log('Setting up event listeners');
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded');
+      const modal = document.getElementById('student-info-modal');
+      const startTestBtn = document.getElementById('start-test-btn');
+      const studentInfoForm = document.getElementById('student-info-form');
+      
+      if (!startTestBtn) {
+        console.error('Start Test button not found');
+        return;
+      }
+      if (!modal) {
+        console.error('Modal not found');
+        return;
+      }
+      if (!studentInfoForm) {
+        console.error('Student info form not found');
+        return;
+      }
 
-    // Fetch region info inside DOMContentLoaded
-    fetch("https://ipapi.co/json/")
-      .then(res => res.json())
-      .then(data => {
-        console.log("Region Info:", data.region);
-        studentInfo.region = data.region;
-      })
-      .catch(err => {
-        console.error("Could not fetch region info", err);
+      console.log('Attaching start button listener');
+      startTestBtn.addEventListener('click', function() {
+        console.log('Start Test button clicked');
+        modal.classList.add('active');
+      });
+      
+      studentInfoForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('Form submitted');
+        
+        const name = document.getElementById('student-name').value.trim();
+        const surname = document.getElementById('student-surname').value.trim();
+        const phone = document.getElementById('student-phone').value.trim();
+        
+        let isValid = true;
+        
+        if (!name) {
+          document.getElementById('name-error').style.display = 'block';
+          isValid = false;
+        } else {
+          document.getElementById('name-error').style.display = 'none';
+        }
+        
+        if (!surname) {
+          document.getElementById('surname-error').style.display = 'block';
+          isValid = false;
+        } else {
+          document.getElementById('surname-error').style.display = 'none';
+        }
+        
+        if (!phone || !/^[\d\s\-()+]{8,}$/.test(phone)) {
+          document.getElementById('phone-error').style.display = 'block';
+          isValid = false;
+        } else {
+          document.getElementById('phone-error').style.display = 'none';
+        }
+        
+        if (isValid) {
+          studentInfo = {
+            name,
+            surname,
+            phone,
+            testDate: new Date().toLocaleString()
+          };
+          console.log('Student info saved:', studentInfo);
+          
+          modal.classList.remove('active');
+          startTest();
+        }
+      });
+      
+      document.getElementById("quiz-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        console.log('Quiz form submitted');
+        submitQuiz();
+      });
+    });
+
+    function closeStudentInfoModal() {
+      console.log('Closing modal');
+      document.getElementById('student-info-modal').classList.remove('active');
+    }
+
+    function startTest() {
+      console.log('Starting test');
+      const startScreen = document.getElementById("start-screen");
+      const testScreen = document.getElementById("test-screen");
+      const timer = document.getElementById("timer");
+
+      startScreen.classList.add("hidden");
+      testScreen.classList.remove("hidden");
+      timer.classList.remove("hidden");
+
+      loadQuestions();
+      startTimer();
+    }
+
+    function loadQuestions() {
+      console.log('Loading questions');
+      const container = document.getElementById("questions-container");
+      container.innerHTML = '';
+      
+      questions.forEach((q, index) => {
+        const inputType = q.multiSelect ? 'checkbox' : 'radio';
+        const inputClass = q.multiSelect ? 'option-checkbox' : 'option-radio';
+        const div = document.createElement("div");
+        div.className = `question ${userAnswers[index] !== null && (Array.isArray(userAnswers[index]) ? userAnswers[index].length > 0 : true) ? 'answered' : ''}`;
+        div.innerHTML = `
+          <div class="question-number">${index + 1}</div>
+          <h3>${q.question}</h3>
+          <div class="options">
+            ${q.options.map((option, optIndex) => `
+              <label class="option ${
+                Array.isArray(userAnswers[index])
+                  ? userAnswers[index].includes(option) ? 'selected' : ''
+                  : userAnswers[index] === option ? 'selected' : ''
+              }">
+                <input type="${inputType}" name="q${index}" value="${option}"
+                  ${Array.isArray(userAnswers[index]) ? (userAnswers[index].includes(option) ? 'checked' : '') : (userAnswers[index] === option ? 'checked' : '')}>
+                <span class="${inputClass}"></span>
+                <span class="option-text">${option}</span>
+              </label>
+            `).join('')}
+          </div>
+        `;
+        
+        container.appendChild(div);
       });
 
-    if (!startTestBtn || !modal || !studentInfoForm) return;
+      document.getElementById("total-questions").textContent = questions.length;
+      
+      document.querySelectorAll('.option').forEach(option => {
+        option.addEventListener('click', function() {
+          console.log('Option clicked:', this);
+          const input = this.querySelector('input');
+          const questionIndex = parseInt(input.name.substring(1));
+          const question = questions[questionIndex];
 
-    startTestBtn.addEventListener('click', function () {
-      modal.classList.add('active');
-    });
+          if (question.multiSelect) {
+            userAnswers[questionIndex] = userAnswers[questionIndex] || [];
+            if (input.checked) {
+              if (!userAnswers[questionIndex].includes(input.value)) {
+                userAnswers[questionIndex].push(input.value);
+              }
+            } else {
+              userAnswers[questionIndex] = userAnswers[questionIndex].filter(val => val !== input.value);
+            }
+            document.querySelectorAll(`input[name="q${questionIndex}"]`).forEach(inp => {
+              inp.closest('.option').classList.toggle('selected', inp.checked);
+            });
+          } else {
+            document.querySelectorAll(`input[name="q${questionIndex}"]`).forEach(inp => {
+              inp.closest('.option').classList.remove('selected');
+              inp.checked = false;
+            });
+            input.checked = true;
+            this.classList.add('selected');
+            userAnswers[questionIndex] = input.value;
+          }
 
-    studentInfoForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const name = document.getElementById('student-name').value.trim();
-      const surname = document.getElementById('student-surname').value.trim();
-      const phone = document.getElementById('student-phone').value.trim();
-      let isValid = true;
+          this.closest('.question').classList.toggle('answered', userAnswers[questionIndex] !== null && (Array.isArray(userAnswers[questionIndex]) ? userAnswers[questionIndex].length > 0 : true));
+          updateProgress();
+        });
+      });
+    }
 
-      if (!name) {
-        document.getElementById('name-error').style.display = 'block';
-        isValid = false;
-      } else {
-        document.getElementById('name-error').style.display = 'none';
+    function startTimer() {
+      console.log('Starting timer');
+      const timerDisplay = document.getElementById("timer-text");
+      
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        if (timeLeft <= 300) {
+          document.getElementById("timer").classList.add("low-time");
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          submitQuiz();
+        }
+        timeLeft--;
+      }, 1000);
+    }
+
+    function updateProgress() {
+      console.log('Updating progress');
+      const answeredCount = userAnswers.filter(answer => answer !== null && (Array.isArray(answer) ? answer.length > 0 : true)).length;
+      const totalQuestions = questions.length;
+      const progressPercentage = Math.round((answeredCount / totalQuestions) * 100);
+      
+      document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
+      document.getElementById("current-question").textContent = answeredCount + 1;
+      document.getElementById("progress-percent").textContent = `${progressPercentage}%`;
+    }
+
+    function determineGroup(score) {
+      console.log('Determining group for score:', score);
+      if (score >= 0 && score <= 7) {
+        return {
+          name: "Pre-Foundation Math",
+          message: "We recommend starting with our Pre-Foundation Math course to build a strong base for your SAT preparation."
+        };
+      } else if (score >= 8 && score <= 14) {
+        return {
+          name: "Foundation Math",
+          message: "You have a good foundation! Our Foundation Math course will help you strengthen your core concepts before moving to SAT-specific content."
+        };
+      } else if (score >= 15 && score <= 25) {
+        return {
+          name: "Pre-SAT Math",
+          message: "Great job! You're ready for our Pre-SAT Math course which focuses on bridging the gap between your current level and SAT requirements."
+        };
+      } else if (score >= 26) {
+        return {
+          name: "SAT Math",
+          message: "Excellent! You're ready to dive straight into our SAT Math course focused on advanced strategies and test-taking techniques."
+        };
       }
+      return {
+        name: "Unknown Group",
+        message: "Please contact our advisors for a personalized learning plan."
+      };
+    }
 
-      if (!surname) {
-        document.getElementById('surname-error').style.display = 'block';
-        isValid = false;
-      } else {
-        document.getElementById('surname-error').style.display = 'none';
-      }
+    function animateValue(id, start, end, duration) {
+      console.log('Animating value for:', id);
+      const obj = document.getElementById(id);
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
 
-      if (!phone || !/^[\d\s\-()+]{8,}$/.test(phone)) {
-        document.getElementById('phone-error').style.display = 'block';
-        isValid = false;
-      } else {
-        document.getElementById('phone-error').style.display = 'none';
-      }
+    function submitQuiz() {
+      console.log('Submitting quiz');
+      clearInterval(timerInterval);
+      document.getElementById("timer").classList.add("hidden");
+      document.getElementById("test-screen").classList.add("hidden");
+      
+      let score = 0;
+      questions.forEach((q, index) => {
+        if (userAnswers[index] !== null) {
+          if (q.multiSelect) {
+            const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
+            const userAnswer = Array.isArray(userAnswers[index]) ? userAnswers[index] : [userAnswers[index]];
+            if (userAnswer.length === correctAnswers.length && userAnswer.every(val => correctAnswers.includes(val))) {
+              score++;
+            }
+          } else {
+            if (userAnswers[index] === q.correct) {
+              score++;
+            }
+          }
+        }
+      });
 
-      if (isValid) {
-        studentInfo.name = name;
-        studentInfo.surname = surname;
-        studentInfo.phone = phone;
-        studentInfo.testDate = new Date().toLocaleString();
-        console.log('Student info saved:', studentInfo);
-        modal.classList.remove('active');
-        startTest();
-      }
-    });
+      const group = determineGroup(score);
+      
+      document.getElementById("score-display").textContent = score;
+      document.getElementById("group-badge").textContent = group.name;
+      document.getElementById("result-message").textContent = group.message;
+      
+      document.getElementById("display-name").textContent = studentInfo.name;
+      document.getElementById("display-surname").textContent = studentInfo.surname;
+      document.getElementById("display-phone").textContent = studentInfo.phone;
+      document.getElementById("test-date").textContent = studentInfo.testDate;
+      
+      animateValue("score-display", 0, score, 1000);
+      
+      document.getElementById("result-screen").classList.remove("hidden");
+      
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
 
-    document.getElementById("quiz-form").addEventListener("submit", function (event) {
-      event.preventDefault();
-      submitQuiz();
-    });
-  });
+      // Submit data to Google Sheets
+      submitToGoogleSheets(score, group.name);
+    }
 
-  function submitToGoogleSheets(score, groupName) {
-    const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw/formResponse';
-    const formData = new URLSearchParams();
-    formData.append('entry.1296235762', studentInfo.name);
-    formData.append('entry.1542197994', studentInfo.surname);
-    formData.append('entry.2100332767', studentInfo.phone);
-    formData.append('entry.893180088', score.toString());
-    formData.append('entry.1652722169', groupName);
-    formData.append('entry.1792063049', studentInfo.region);
+    function submitToGoogleSheets(score, groupName) {
+      const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdP-9aY8cqStON87vpKuIeDzapAFNu-hU0hTYN7Qb8P11WoKw/formResponse';
+      
+      const formData = new URLSearchParams();
+      formData.append('entry.1296235762', studentInfo.name);      // Name
+      formData.append('entry.1542197994', studentInfo.surname);   // Surname
+      formData.append('entry.2100332767', studentInfo.phone);     // Phone
+      formData.append('entry.893180088', score.toString());       // Score
+      formData.append('entry.1652722169', groupName);             // Group
+      formData.append('entry.1792063049', studentInfo.region);
 
-    fetch(formUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: formData
-    })
+      // formData.append('entry.XXXXXX', studentInfo.testDate);   // Uncomment if you have date field
+
+      fetch(formUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+      })
       .then(() => {
         console.log('Form submitted successfully');
+        // Optional: Show success message to user
         alert('Your results have been saved successfully!');
       })
       .catch(error => {
         console.error('Error submitting form:', error);
+        // Optional: Show error message to user
         alert('There was an error saving your results. Please try again.');
       });
-  }
-</script>
+    }
 
-   
+    function checkAdminPassword() {
+      console.log('Checking admin password');
+      const ADMIN_PASSWORD = "satmakon123";
+      const passwordInput = document.getElementById('admin-password');
+      
+      if (passwordInput.value === ADMIN_PASSWORD) {
+        document.querySelectorAll('.admin-only').forEach(el => {
+          el.style.display = 'block';
+        });
+        document.getElementById('admin-login-section').classList.add('hidden');
+        document.getElementById('admin-actions').classList.remove('hidden');
+        alert('Admin access granted');
+      } else {
+        alert('Incorrect password');
+        passwordInput.value = '';
+      }
+    }
+
+    function viewSavedResults() {
+      console.log('Viewing saved results');
+      const resultsList = document.getElementById('saved-results-list');
+      resultsList.innerHTML = '<p>No results available (Google Sheets integration required for data storage)</p>';
+      
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('saved-results-screen').classList.remove('hidden');
+    }
+
+    function backToResults() {
+      console.log('Returning to results screen');
+      document.getElementById('saved-results-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.remove('hidden');
+    }
+  </script>
 </body>
 </html>
