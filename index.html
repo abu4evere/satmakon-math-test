@@ -765,6 +765,15 @@
   </div>
 
   <script>
+    fetch("https://ipapi.co/json/")
+  .then(res => res.json())
+  .then(data => {
+    console.log("Region Info:", data.region);
+    studentInfo.region = data.region;
+  })
+  .catch(err => {
+    console.error("Could not fetch region info", err);
+  });
     console.log('Script loaded');
     
     const questions = [
@@ -940,7 +949,8 @@
       name: '',
       surname: '',
       phone: '',
-      testDate: ''
+      testDate: '',
+      region: ''
     };
 
     console.log('Setting up event listeners');
@@ -1242,6 +1252,8 @@
       formData.append('entry.2100332767', studentInfo.phone);     // Phone
       formData.append('entry.893180088', score.toString());       // Score
       formData.append('entry.1652722169', groupName);             // Group
+      formData.append('entry.1792063049', studentInfo.region);
+
       // formData.append('entry.XXXXXX', studentInfo.testDate);   // Uncomment if you have date field
 
       fetch(formUrl, {
